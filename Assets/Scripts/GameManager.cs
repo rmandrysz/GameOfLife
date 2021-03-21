@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,26 +11,30 @@ public class GameManager : MonoBehaviour
     public int horizontalCellCount = 100;
     public int verticalCellCount = 100;
 
+    private GameObject mainCamera;
+
     private Cell[,] grid;
 
     public float delay = 1f / 2f;
     private float nextUpdate = 0f;
     private bool isRunning = false;
 
-    public int spawnChance = 60;
+    private int spawnChance = 0;
 
     // Start is called before the first frame update
     void Start()
     {
         grid = new Cell[horizontalCellCount, verticalCellCount];
         nextUpdate = delay;
-        GenerateCells(spawnChance);
+        CreateBoard();
     }
 
     void Awake()
     {
         Application.targetFrameRate = 60;
-        GameObject.FindGameObjectWithTag("MainCamera").transform.position = new Vector3(horizontalCellCount / 2, verticalCellCount / 2, -1);
+        mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        mainCamera.transform.position = new Vector3(horizontalCellCount / 2, (verticalCellCount / 2) - 0.5f, -1);
+        mainCamera.GetComponent<Camera>().orthographicSize = verticalCellCount / 2;
     }
 
     // Update is called once per frame
@@ -42,20 +47,20 @@ public class GameManager : MonoBehaviour
         //}
     }
 
-    private void GenerateCells()
+    public void GenerateCells()
     {
-        for (int x = 0; x < screenWidth; ++x)
-        {
-            for (int y = 0; y < screenHeight; ++y)
+
+            for (int x = 0; x < horizontalCellCount; ++x)
             {
-                GameObject cellPrefab = (GameObject)Resources.Load("Prefabs/Cell");
-                grid[x, y] = Instantiate(cellPrefab, new Vector2(x, y), Quaternion.identity).GetComponent<Cell>();
-                grid[x, y].setAlive(true);
+                for (int y = 0; y < verticalCellCount; ++y)
+                {
+                    grid[x, y].setAlive(Random.Range(0, 100) < spawnChance);
+
+                }
             }
-        }
     }
 
-    private void GenerateCells(int aliveChance)
+    public void CreateBoard()
     {
         for (int x = 0; x < horizontalCellCount; ++x)
         {
@@ -63,8 +68,6 @@ public class GameManager : MonoBehaviour
             {
                 GameObject cellPrefab = (GameObject)Resources.Load("Prefabs/Cell");
                 grid[x, y] = Instantiate(cellPrefab, new Vector2(x, y), Quaternion.identity).GetComponent<Cell>();
-                
-                grid[x, y].setAlive(Random.Range(0, 100) < aliveChance);
             }
         }
     }
@@ -326,5 +329,10 @@ public class GameManager : MonoBehaviour
     public bool SimRunning()
     {
         return isRunning;
+    }
+
+    public void OnSliderValueChange(float value)
+    {
+        spawnChance = (int)value;
     }
 }
