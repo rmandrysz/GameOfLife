@@ -6,23 +6,30 @@ public class GameManager : MonoBehaviour
 {
     private const int screenWidth = 2560 / 16;
     private const int screenHeight = 1440 / 16;
-    private Cell[,] grid = new Cell[screenWidth, screenHeight];
+
+    public int horizontalCellCount = 100;
+    public int verticalCellCount = 100;
+
+    private Cell[,] grid;
 
     public float delay = 1f / 2f;
     private float nextUpdate = 0f;
+    private bool isRunning = false;
 
-    public int spawnChance = 30;
+    public int spawnChance = 60;
 
     // Start is called before the first frame update
     void Start()
     {
+        grid = new Cell[horizontalCellCount, verticalCellCount];
         nextUpdate = delay;
-        generateCells(spawnChance);
+        GenerateCells(spawnChance);
     }
 
     void Awake()
     {
-        Application.targetFrameRate = 10;
+        Application.targetFrameRate = 60;
+        GameObject.FindGameObjectWithTag("MainCamera").transform.position = new Vector3(horizontalCellCount / 2, verticalCellCount / 2, -1);
     }
 
     // Update is called once per frame
@@ -30,12 +37,12 @@ public class GameManager : MonoBehaviour
     {
         //if(Time.time >= nextUpdate)
         //{
-            updateCells();
+            UpdateCells();
             //nextUpdate += delay;
         //}
     }
 
-    private void generateCells()
+    private void GenerateCells()
     {
         for (int x = 0; x < screenWidth; ++x)
         {
@@ -48,11 +55,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void generateCells(int aliveChance)
+    private void GenerateCells(int aliveChance)
     {
-        for (int x = 0; x < screenWidth; ++x)
+        for (int x = 0; x < horizontalCellCount; ++x)
         {
-            for (int y = 0; y < screenHeight; ++y)
+            for (int y = 0; y < verticalCellCount; ++y)
             {
                 GameObject cellPrefab = (GameObject)Resources.Load("Prefabs/Cell");
                 grid[x, y] = Instantiate(cellPrefab, new Vector2(x, y), Quaternion.identity).GetComponent<Cell>();
@@ -62,31 +69,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void updateCells()
+    private void UpdateCells()
     {
-        countCellNeighbors();
-
-        for (int x = 0; x < screenWidth; ++x)
+        if (isRunning)
         {
-            for (int y = 0; y < screenHeight; ++y)
+            CountCellNeighbors();
+
+            for (int x = 0; x < horizontalCellCount; ++x)
             {
-                if (grid[x, y].numberOfNeighbors > 3 || grid[x, y].numberOfNeighbors < 2)
+                for (int y = 0; y < verticalCellCount; ++y)
                 {
-                    grid[x, y].setAlive(false);
-                }
-                else
-                {
-                    grid[x, y].setAlive(true);
+                    if (grid[x, y].numberOfNeighbors == 3)
+                    {
+                        {
+                            grid[x, y].setAlive(true);
+                        }
+                    }
+                    else if (grid[x, y].numberOfNeighbors != 2)
+                    {
+                        grid[x, y].setAlive(false);
+                    }
                 }
             }
         }
     }
 
-    private void countCellNeighbors()
+    private void CountCellNeighbors()
     {
-        for (int x = 0; x < screenWidth; ++x)
+        for (int x = 0; x < horizontalCellCount; ++x)
         {
-            for (int y = 0; y < screenHeight; ++y)
+            for (int y = 0; y < verticalCellCount; ++y)
             {
                 int neighbors = 0;
 
@@ -94,14 +106,14 @@ public class GameManager : MonoBehaviour
 
                 // ---------------------------------------------------------------------------------------------------------------
                 // North
-                if (y + 1 < screenHeight)
+                if (y + 1 < verticalCellCount)
                 {
                     if (grid[x, y + 1].GetComponent<Cell>().isAlive) { 
                         ++neighbors;
                     }
 
                     // Northeast 
-                    if (x + 1 < screenWidth)
+                    if (x + 1 < horizontalCellCount)
                     {
                         if (grid[x + 1, y + 1].GetComponent<Cell>().isAlive)
                         {
@@ -126,7 +138,7 @@ public class GameManager : MonoBehaviour
                     } 
                     else
                     {
-                        if (grid[screenWidth - 1, y + 1].GetComponent<Cell>().isAlive)
+                        if (grid[horizontalCellCount - 1, y + 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
@@ -140,7 +152,7 @@ public class GameManager : MonoBehaviour
                     }
 
                     // Northeast
-                    if (x + 1 < screenWidth)
+                    if (x + 1 < horizontalCellCount)
                     {
                         if (grid[x + 1, 0].GetComponent<Cell>().isAlive)
                         {
@@ -165,7 +177,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        if (grid[screenWidth - 1, 0].GetComponent<Cell>().isAlive)
+                        if (grid[horizontalCellCount - 1, 0].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
@@ -181,7 +193,7 @@ public class GameManager : MonoBehaviour
                     }
 
                     // Northeast 
-                    if (x + 1 < screenWidth)
+                    if (x + 1 < horizontalCellCount)
                     {
                         if (grid[x + 1, y - 1].GetComponent<Cell>().isAlive)
                         {
@@ -206,7 +218,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        if (grid[screenWidth - 1, y - 1].GetComponent<Cell>().isAlive)
+                        if (grid[horizontalCellCount - 1, y - 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
@@ -214,22 +226,22 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    if (grid[x, screenHeight - 1].GetComponent<Cell>().isAlive)
+                    if (grid[x, verticalCellCount - 1].GetComponent<Cell>().isAlive)
                     {
                         ++neighbors;
                     }
                                         
                     // Southeast 
-                    if (x + 1 < screenWidth)
+                    if (x + 1 < horizontalCellCount)
                     {
-                        if (grid[x + 1, screenHeight - 1].GetComponent<Cell>().isAlive)
+                        if (grid[x + 1, verticalCellCount - 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
                     }
                     else
                     {
-                        if (grid[0, screenHeight - 1].GetComponent<Cell>().isAlive)
+                        if (grid[0, verticalCellCount - 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
@@ -238,14 +250,14 @@ public class GameManager : MonoBehaviour
                     // Southwest
                     if (x - 1 >= 0)
                     {
-                        if (grid[x - 1, screenHeight - 1].GetComponent<Cell>().isAlive)
+                        if (grid[x - 1, verticalCellCount - 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
                     }
                     else
                     {
-                        if (grid[screenWidth - 1, screenHeight - 1].GetComponent<Cell>().isAlive)
+                        if (grid[horizontalCellCount - 1, verticalCellCount - 1].GetComponent<Cell>().isAlive)
                         {
                             ++neighbors;
                         }
@@ -253,7 +265,7 @@ public class GameManager : MonoBehaviour
                 }
                 // ---------------------------------------------------------------------------------------------------------------
                 // West
-                if (x + 1 < screenWidth) {
+                if (x + 1 < horizontalCellCount) {
                     if (grid[x + 1, y].GetComponent<Cell>().isAlive)
                     {
                         ++neighbors;
@@ -261,7 +273,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    if (grid[0, y])
+                    if (grid[0, y].GetComponent<Cell>().isAlive)
                     {
                         ++neighbors;
                     }
@@ -278,7 +290,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    if (grid[screenWidth - 1, y].GetComponent<Cell>().isAlive)
+                    if (grid[horizontalCellCount - 1, y].GetComponent<Cell>().isAlive)
                     {
                         ++neighbors;
                     }
@@ -287,5 +299,32 @@ public class GameManager : MonoBehaviour
                 grid[x, y].numberOfNeighbors = neighbors;
             }
         }
+    }
+
+    public void SimStart()
+    {
+        isRunning = true;
+    }
+
+    public void SimStop()
+    {
+        isRunning = false;
+    }
+
+    public void SimStep()
+    {
+        StartCoroutine(WaitOneFrame());
+    }
+
+    private IEnumerator WaitOneFrame()
+    {
+        SimStart();
+        yield return new WaitForEndOfFrame();
+        SimStop();
+    }
+
+    public bool SimRunning()
+    {
+        return isRunning;
     }
 }
