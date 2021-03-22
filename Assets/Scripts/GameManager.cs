@@ -9,8 +9,9 @@ public class GameManager : MonoBehaviour
     private const int screenWidth = 2560 / 16;
     private const int screenHeight = 1440 / 16;
 
-    public int horizontalCellCount = 100;
-    public int verticalCellCount = 100;
+    public int horizontalCellCount = 10;
+    public int verticalCellCount = 10;
+    private int totalCellCount;
 
     private GameObject mainCamera;
 
@@ -22,8 +23,10 @@ public class GameManager : MonoBehaviour
 
     private int spawnChance = 0;
 
-    private int writeLimit = 5000;
+    private int writeLimit = 1000;
     private int writeCounter = 0;
+    private int iterations = 0;
+    public int maxIterations = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -31,11 +34,12 @@ public class GameManager : MonoBehaviour
         grid = new Cell[horizontalCellCount, verticalCellCount];
         nextUpdate = delay;
         CreateBoard();
+        Directory.CreateDirectory(Application.dataPath + "/Data/Errors/" + verticalCellCount + "/");
+        totalCellCount = verticalCellCount * horizontalCellCount;
     }
 
     void Awake()
     {
-        Application.targetFrameRate = 60;
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         mainCamera.transform.position = new Vector3(horizontalCellCount / 2, (verticalCellCount / 2) - 0.5f, -1);
         mainCamera.GetComponent<Camera>().orthographicSize = verticalCellCount / 2;
@@ -78,7 +82,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateCells()
     {
-        int aliveCells = 0;
+        float aliveCells = 0;
 
         if (isRunning)
         {
@@ -102,7 +106,8 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
-            SaveToFile(aliveCells);
+            //SaveToFile(aliveCells);
+            SaveToFile2(aliveCells / totalCellCount);
         }
     }
 
@@ -358,5 +363,29 @@ public class GameManager : MonoBehaviour
             File.AppendAllText(Application.dataPath + "/Data/pEquals" + spawnChance + ".txt", value + "\n");
             Debug.Log(writeCounter);
         }
+    }
+
+    public void SaveToFile2(float value)
+    {
+        string path = Application.dataPath + "/Data/Errors/" + verticalCellCount + "/";
+        if (writeCounter > writeLimit)
+        {
+            Debug.Log("Iteration" + iterations);
+            ++iterations;
+            if(iterations >= maxIterations)
+            {
+                SimStop();
+                return;
+            }
+            else
+            {
+                GenerateCells();
+            }
+            writeCounter = 0;
+        }
+        File.AppendAllText(path + iterations + "pEq" + spawnChance + ".txt", (value + "\n").Replace(',', '.'));
+
+        ++writeCounter;
+
     }
 }

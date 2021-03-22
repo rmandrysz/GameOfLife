@@ -17,6 +17,14 @@ for p0 in p0Values:
     f = open('../pEquals' + str(p0) + '.txt')
     y = [int(line) / cellAmount for line in f.readlines()]
 
+    i = 4999
+    while y[i] == y[4999]:
+        i -= 1
+        
+    print('p_0 = ' + str(p0 / 100) + ':')
+    print("Limit value of density: " + str(y[i]))
+    print("t value for the limit: " + str(i) + "\n")
+
     plt.plot(x, y, '+', markersize = 3)
     plt.xlabel("t")
     plt.ylabel(r'Density of alive cells $\left(\dfrac{alive}{all}\right)$')

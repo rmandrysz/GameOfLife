@@ -2046,6 +2046,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a05f4357b608d8d4986103f27e5b7b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  horizontalCellCount: 100
-  verticalCellCount: 100
+  horizontalCellCount: 150
+  verticalCellCount: 150
   delay: 1
+  maxIterations: 10
