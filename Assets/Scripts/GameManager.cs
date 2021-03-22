@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class GameManager : MonoBehaviour
     private bool isRunning = false;
 
     private int spawnChance = 0;
+
+    private int writeLimit = 5000;
+    private int writeCounter = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -74,6 +78,8 @@ public class GameManager : MonoBehaviour
 
     private void UpdateCells()
     {
+        int aliveCells = 0;
+
         if (isRunning)
         {
             CountCellNeighbors();
@@ -82,11 +88,13 @@ public class GameManager : MonoBehaviour
             {
                 for (int y = 0; y < verticalCellCount; ++y)
                 {
+                    if(grid[x, y].isAlive)
+                    {
+                        ++aliveCells;
+                    }
                     if (grid[x, y].numberOfNeighbors == 3)
                     {
-                        {
-                            grid[x, y].setAlive(true);
-                        }
+                        grid[x, y].setAlive(true);
                     }
                     else if (grid[x, y].numberOfNeighbors != 2)
                     {
@@ -94,6 +102,7 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
+            SaveToFile(aliveCells);
         }
     }
 
@@ -334,5 +343,20 @@ public class GameManager : MonoBehaviour
     public void OnSliderValueChange(float value)
     {
         spawnChance = (int)value;
+    }
+
+    public void SaveToFile(int value)
+    {
+        ++writeCounter;
+        if(writeCounter > writeLimit)
+        {
+            Debug.Log(true);
+            SimStop();
+        }
+        else 
+        { 
+            File.AppendAllText(Application.dataPath + "/Data/pEquals" + spawnChance + ".txt", value + "\n");
+            Debug.Log(writeCounter);
+        }
     }
 }
