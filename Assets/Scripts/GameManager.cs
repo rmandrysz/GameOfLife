@@ -6,8 +6,8 @@ using System.IO;
 
 public class GameManager : MonoBehaviour
 {
-    private const int screenWidth = 2560 / 16;
-    private const int screenHeight = 1440 / 16;
+    [SerializeField] private const int screenWidth = 2560 / 16;
+    [SerializeField] private const int screenHeight = 1440 / 16;
 
     public int horizontalCellCount = 10;
     public int verticalCellCount = 10;
@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
 
     private int spawnChance = 0;
 
-    private int writeLimit = 1000;
+    private int writeLimit = 2137;
     private int writeCounter = 0;
     private int iterations = 0;
     public int maxIterations = 1;
